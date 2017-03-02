@@ -155,6 +155,15 @@ void testRowVsColumnVsMixedSquare(int s, int offset, int increment, int range) {
         int* cMix2 = multiplyMatrixMixed(a,m,n,b,p);
 
         cerr << cMix2[1] << '\n';
+
+        delete[] a;
+        delete[] b;
+        delete[] cRow;
+        delete[] cRow2;
+        delete[] cCol;
+        delete[] cCol2;
+        delete[] cMix;
+        delete[] cMix2;
     }
 
     for(int i = 0; i <= counter; i++) {
