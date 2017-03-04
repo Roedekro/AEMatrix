@@ -298,7 +298,7 @@ void testMultiplyTranspose (int s, int offset, int increment, int range) {
         typedef std::chrono::system_clock Clock;
         auto start = Clock::now();
 
-        int* cRow = multiplyMatrixRow(a,m,n,c,p);
+        int* cRow = multiplyMatrixRow(a,m,n,b,p);
 
         auto stop = Clock::now();
         auto total = stop-start;
@@ -306,7 +306,7 @@ void testMultiplyTranspose (int s, int offset, int increment, int range) {
         timeNoTranspose[counter] = millis;
         cerr << cRow[1] << '\n';
 
-        int* cRow2 = multiplyMatrixRow(a,m,n,c,p);
+        int* cRow2 = multiplyMatrixRow(a,m,n,b,p);
 
         cerr << cRow2[1] << '\n';
 
