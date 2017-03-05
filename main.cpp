@@ -2,8 +2,82 @@
 #include <stdlib.h>
 #include <ctime>
 #include <chrono>
+#include <math.h>
+#include <algorithm>
 
 using namespace std;
+
+void multiplyRecursiveMixed(int* a, int* b, int* c, int mStart, int nStart, int pStart, int mStop, int nStop, int pStop,
+                             int mOrig, int nOrig, int pOrig) {
+
+    int mDif = mStop-mStart;
+    int nDif = nStop-nStart;
+    int pDif = pStop-pStart;
+    //if(mDif == 1 && pDif == 1) {
+    if(mDif == 1 || pDif == 1) {
+        for(int i = mStart; i < mStop; i++) {
+            for(int j = pStart; j < pStop; j++) {
+                for(int k = nStart; k < nStop; k++) {
+                    // Mixed c[i*n+j] += a[i*n+k] * b[j*n+k];
+                    c[i*pOrig+j] += a[i*nOrig+k] * b[j*pOrig+k];
+                }
+            }
+        }
+    }
+    else {
+        if(mDif >= max(nDif, pDif)) {
+            int newM = (mStart + mStop)/2;
+            multiplyRecursiveMixed(a,b,c,mStart,nStart,pStart,newM,nStop,pStop,mOrig,nOrig,pOrig);
+            multiplyRecursiveMixed(a,b,c,newM,nStart,pStart,mStop,nStop,pStop,mOrig,nOrig,pOrig);
+        }
+        else if(nDif >= max(mDif,pDif)) {
+            int newN = (nStart+nStop)/2;
+            multiplyRecursiveMixed(a,b,c,mStart,nStart,pStart,mStop,newN,pStop,mOrig,nOrig,pOrig);
+            multiplyRecursiveMixed(a,b,c,mStart,newN,pStart,mStop,nStop,pStop,mOrig,nOrig,pOrig);
+        }
+        else {
+            int newP = (pStart+pStop)/2;
+            multiplyRecursiveMixed(a,b,c,mStart,nStart,pStart,mStop,nStop,newP,mOrig,nOrig,pOrig);
+            multiplyRecursiveMixed(a,b,c,mStart,nStart,newP,mStop,nStop,pStop,mOrig,nOrig,pOrig);
+        }
+    }
+}
+
+void multiplyRecursiveRow(int* a, int* b, int* c, int mStart, int nStart, int pStart, int mStop, int nStop, int pStop,
+                            int mOrig, int nOrig, int pOrig) {
+
+    int mDif = mStop-mStart;
+    int nDif = nStop-nStart;
+    int pDif = pStop-pStart;
+    if(mDif == 1 || pDif == 1) {
+        for(int i = mStart; i < mStop; i++) {
+            for(int j = pStart; j < pStop; j++) {
+                for(int k = nStart; k < nStop; k++) {
+                    // Row c[i*n+j] += a[i*n+k] * b[k*n+j];
+                    c[i*pOrig+j] += a[i*nOrig+k] * b[k*pOrig+j];
+                }
+            }
+        }
+    }
+    else {
+        if(mDif >= max(nDif, pDif)) {
+            int newM = (mStart + mStop)/2;
+            multiplyRecursiveRow(a,b,c,mStart,nStart,pStart,newM,nStop,pStop,mOrig,nOrig,pOrig);
+            multiplyRecursiveRow(a,b,c,newM,nStart,pStart,mStop,nStop,pStop,mOrig,nOrig,pOrig);
+        }
+        else if(nDif >= max(mDif,pDif)) {
+            int newN = (nStart+nStop)/2;
+            multiplyRecursiveRow(a,b,c,mStart,nStart,pStart,mStop,newN,pStop,mOrig,nOrig,pOrig);
+            multiplyRecursiveRow(a,b,c,mStart,newN,pStart,mStop,nStop,pStop,mOrig,nOrig,pOrig);
+        }
+        else {
+            int newP = (pStart+pStop)/2;
+            multiplyRecursiveRow(a,b,c,mStart,nStart,pStart,mStop,nStop,newP,mOrig,nOrig,pOrig);
+            multiplyRecursiveRow(a,b,c,mStart,nStart,newP,mStop,nStop,pStop,mOrig,nOrig,pOrig);
+        }
+    }
+}
+
 
 int* transposeNaive(int* a, int* b, int m, int n) {
 
@@ -20,6 +94,7 @@ void transposeRec(int* a, int* b, int mStart, int nStart, int mStop, int nStop, 
     int mDif = mStop - mStart;
     int nDif = nStop - nStart;
     if(mDif == 1 || nDif == 1) {
+    //if(mDif == 1 && nDif == 1) {
         /*cout << "Transposing " << mStart << "," << nStart << "," << mStop << "," << nStop
                 << "," << origM << "," << origN << '\n';*/
         for(int i = 0; i < mDif; i++) {
@@ -344,6 +419,73 @@ void testMultiplyTranspose (int s, int offset, int increment, int range) {
 
 }
 
+void testMultiplyRecursive (int s, int offset, int increment, int range) {
+
+    int *timeNormal = new int[(s - offset) / increment];
+    int *timeRecursive = new int[(s - offset) / increment];
+    int *timeRecursiveTranspose = new int[(s - offset) / increment];
+    int counter = -1;
+
+    for (int x = offset; x <= s; x = x + increment) {
+        counter++;
+        int m = x;
+        int n = x;
+        int p = x;
+
+        cerr << "Building " << x << '\n';
+        int *a = buildSkewedMatrix(m, n, range);
+        int *b = buildSkewedMatrix(n, p, range);
+        cerr << "Finished\n";
+        int *c = new int[m * p];
+
+
+        typedef std::chrono::system_clock Clock;
+        auto start = Clock::now();
+
+        int *cRow = multiplyMatrixRow(a, m, n, b, p);
+
+        auto stop = Clock::now();
+        auto total = stop - start;
+        long millis = std::chrono::duration_cast<std::chrono::milliseconds>(total).count();
+        timeNormal[counter] = millis;
+        cerr << cRow[1] << '\n';
+
+        int *cRow2 = multiplyMatrixRow(a, m, n, b, p);
+
+
+        start = Clock::now();
+
+        // Skal gøres uden for funktionen, men er en del af det
+        for (int i = 0; i < m * p; i++) {
+            c[i] = 0;
+        }
+        multiplyRecursiveRow(a, b, c, 0, 0, 0, m, n, p, m, n, p);
+
+        stop = Clock::now();
+        total = stop - start;
+        millis = std::chrono::duration_cast<std::chrono::milliseconds>(total).count();
+        timeRecursive[counter] = millis;
+        cerr << c[1] << '\n';
+
+        for (int i = 0; i < m * p; i++) {
+            c[i] = 0;
+        }
+        multiplyRecursiveRow(a, b, c, 0, 0, 0, m, n, p, m, n, p);
+
+        cerr << c[1] << '\n';
+
+
+        delete[] a;
+        delete[] b;
+        delete[] c;
+        delete[] cRow;
+        delete[] cRow2;
+    }
+    for (int i = 0; i <= counter; i++) {
+        cout << (offset + i * increment) << '\t' << timeNormal[i] << '\t' << timeRecursive[i] << '\n';
+    }
+}
+
 
 
 int main(int argc, char* argv[]) {
@@ -351,9 +493,9 @@ int main(int argc, char* argv[]) {
     int size,test,range,offset,increment;
     if(argc != 5) {
         cout << "Arguments are <test> <max size> <min size> <increment> <range>\n";
-        test = 3;
-        size = 1000;
-        offset = 1000;
+        test = 2;
+        size = 10000;
+        offset = 10000;
         increment = 1000;
         range = 100000;
     }
@@ -375,6 +517,20 @@ int main(int argc, char* argv[]) {
     else if(test == 3) {
         testMultiplyTranspose(size,offset,increment,range);
     }
+    else if(test == 4) {
+        testMultiplyRecursive(size,offset,increment,range);
+    }
+
+    // Test recursive multiply
+    /*int* test1 = new int[9]{1,2,3,4,5,6,7,8,9};
+    int* test2 = new int[9]{1,2,3,4,5,6,7,8,9};
+    int* test3 = new int[9]{0,0,0,0,0,0,0,0,0};
+
+    multiplyRecursiveRow(test1,test2,test3,0,0,0,3,3,3,3,3,3);
+
+    for(int i = 0; i < 9; i++) {
+        cout << test3[i] << '\n';
+    }*/
 
     // Test transpose functions
     /*int* test1 = new int[9]{1,2,3,4,5,6,7,8,9};
