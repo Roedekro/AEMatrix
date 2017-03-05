@@ -225,9 +225,9 @@ int* multiplyMatrixMixed(int* a, int m, int n, int* b, int p) {
 
 void testRowVsColumnVsMixedSquare(int s, int offset, int increment, int range) {
 
-    int* timeRow = new int[(s-offset)/increment];
-    int* timeCol = new int[(s-offset)/increment];
-    int* timeMix = new int[(s-offset)/increment];
+    int* timeRow = new int[(s-offset)/increment+1];
+    int* timeCol = new int[(s-offset)/increment+1];
+    int* timeMix = new int[(s-offset)/increment+1];
     int counter = -1;
 
     for(int x = offset; x <= s; x=x+increment) {
@@ -307,8 +307,8 @@ void testRowVsColumnVsMixedSquare(int s, int offset, int increment, int range) {
 
 void testTranspose(int s, int offset, int increment, int range) {
 
-    int* timeClassic = new int[(s-offset)/increment];
-    int* timeRecursive = new int[(s-offset)/increment];
+    int* timeClassic = new int[(s-offset)/increment+1];
+    int* timeRecursive = new int[(s-offset)/increment+1];
     int counter = -1;
 
     for(int x = offset; x <= s; x=x+increment) {
@@ -366,8 +366,8 @@ void testTranspose(int s, int offset, int increment, int range) {
 
 void testMultiplyTranspose (int s, int offset, int increment, int range) {
 
-    int* timeNoTranspose = new int[(s-offset)/increment];
-    int* timeWithTranspose = new int[(s-offset)/increment];
+    int* timeNoTranspose = new int[(s-offset)/increment+1];
+    int* timeWithTranspose = new int[(s-offset)/increment+1];
     int counter = -1;
 
     for(int x = offset; x <= s; x=x+increment) {
@@ -400,7 +400,7 @@ void testMultiplyTranspose (int s, int offset, int increment, int range) {
 
         start = Clock::now();
 
-        transposeRec(b,c,0,0,m,n,m,n);
+        transposeNaive(b,c,m,n);
         int* cMix = multiplyMatrixMixed(a,m,n,c,p);
 
         stop = Clock::now();
@@ -409,7 +409,7 @@ void testMultiplyTranspose (int s, int offset, int increment, int range) {
         timeWithTranspose[counter] = millis;
         cerr << cMix[1] << '\n';
 
-        transposeRec(b,c,0,0,m,n,m,n);
+        transposeNaive(b,c,m,n);
         int* cMix2 = multiplyMatrixMixed(a,m,n,c,p);
 
         cerr << cMix2[1] << '\n';
@@ -433,9 +433,9 @@ void testMultiplyTranspose (int s, int offset, int increment, int range) {
 
 void testMultiplyRecursive (int s, int offset, int increment, int range) {
 
-    int *timeNormal = new int[(s - offset) / increment];
-    int *timeRecursive = new int[(s - offset) / increment];
-    int *timeRecursiveTranspose = new int[(s - offset) / increment];
+    int *timeNormal = new int[(s - offset) / increment+1];
+    int *timeRecursive = new int[(s - offset) / increment+1];
+    int *timeRecursiveTranspose = new int[(s - offset) / increment+1];
     int counter = -1;
 
     for (int x = offset; x <= s; x = x + increment) {
@@ -503,7 +503,7 @@ void testMultiplyRecursive (int s, int offset, int increment, int range) {
 int main(int argc, char* argv[]) {
 
     int size,test,range,offset,increment;
-    if(argc != 5) {
+    if(argc != 6) {
         cout << "Arguments are <test> <max size> <min size> <increment> <range>\n";
         test = 2;
         size = 10000;
