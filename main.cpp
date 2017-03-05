@@ -13,8 +13,9 @@ void multiplyRecursiveMixed(int* a, int* b, int* c, int mStart, int nStart, int 
     int mDif = mStop-mStart;
     int nDif = nStop-nStart;
     int pDif = pStop-pStart;
+    //cout << mStart << "," << nStart << "," << pStart << "\t" << mDif << "," << nDif << "," << pDif << '\n';
     //if(mDif == 1 && pDif == 1) {
-    if(mDif == 1 || pDif == 1) {
+    /*if(mDif == 1 || pDif == 1) {
         for(int i = mStart; i < mStop; i++) {
             for(int j = pStart; j < pStop; j++) {
                 for(int k = nStart; k < nStop; k++) {
@@ -23,6 +24,11 @@ void multiplyRecursiveMixed(int* a, int* b, int* c, int mStart, int nStart, int 
                 }
             }
         }
+    }*/
+    if(mDif == 1 && nDif == 1 && pDif == 1) {
+        c[mStart*pOrig+pStart] += a[mStart*nOrig+nStart] * b[pStart*pOrig+nStart];
+        /*cout << "Added " << a[mStart*nOrig+nStart] * b[pStart*pOrig+nStart] << " to " << mStart*pOrig+pStart << " totalling "
+        << c[mStart*pOrig+pStart] << '\n';*/
     }
     else {
         if(mDif >= max(nDif, pDif)) {
@@ -49,7 +55,7 @@ void multiplyRecursiveRow(int* a, int* b, int* c, int mStart, int nStart, int pS
     int mDif = mStop-mStart;
     int nDif = nStop-nStart;
     int pDif = pStop-pStart;
-    if(mDif == 1 || pDif == 1) {
+    /*if(mDif == 1 || pDif == 1) {
         for(int i = mStart; i < mStop; i++) {
             for(int j = pStart; j < pStop; j++) {
                 for(int k = nStart; k < nStop; k++) {
@@ -58,6 +64,12 @@ void multiplyRecursiveRow(int* a, int* b, int* c, int mStart, int nStart, int pS
                 }
             }
         }
+    }*/
+    //cout << mStart << "," << nStart << "," << pStart << "\t" << mDif << "," << nDif << "," << pDif << '\n';
+    if(mDif == 1 && nDif == 1 && pDif == 1) {
+        c[mStart*pOrig+pStart] += a[mStart*nOrig+nStart] * b[nStart*pOrig+pStart];
+        /*cout << "Added " << a[mStart*nOrig+nStart] * b[nStart*pOrig+pStart] << " to " << mStart*pOrig+pStart << " totalling "
+             << c[mStart*pOrig+pStart] << '\n';*/
     }
     else {
         if(mDif >= max(nDif, pDif)) {
@@ -93,8 +105,8 @@ void transposeRec(int* a, int* b, int mStart, int nStart, int mStop, int nStop, 
     int newN, newM;
     int mDif = mStop - mStart;
     int nDif = nStop - nStart;
-    if(mDif == 1 || nDif == 1) {
-    //if(mDif == 1 && nDif == 1) {
+    //if(mDif == 1 || nDif == 1) {
+    if(mDif == 1 && nDif == 1) {
         /*cout << "Transposing " << mStart << "," << nStart << "," << mStop << "," << nStop
                 << "," << origM << "," << origN << '\n';*/
         for(int i = 0; i < mDif; i++) {
