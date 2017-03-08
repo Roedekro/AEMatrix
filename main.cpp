@@ -7,6 +7,33 @@
 
 using namespace std;
 
+int* multiplyTiledSquare(int* a, int* b, int* c, int n, int s) {
+
+    int to = n/s;
+    if(n % s != 0) {
+        to++;
+    }
+
+    for(int x = 0; x < to; x++) {
+        for(int y = 0; y < to; y++) {
+            for(int z = 0; z < to; z++) {
+                // matrix[i][j]
+                for(int i = x*s; (i < (x+1)*s && i < n); i++) {
+                    for(int j = y*s; (j < (y+1)*s && j < n); j++) {
+                        for(int k = z*s; (k < (z+1)*s && k < n); k++) {
+                            // c[i][j] += a[i][k] * b[k][j]
+                            c[i*n+j] += a[i*n+k] * b[k*n+j];
+                            cout << x << "," << y << "," << z << "\t" << i << "," << j << "," << z << '\n';
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+    return c;
+}
+
 void multiplyRecursiveMixed(int* a, int* b, int* c, int mStart, int nStart, int pStart, int mStop, int nStop, int pStop,
                              int mOrig, int nOrig, int pOrig) {
 
@@ -483,11 +510,11 @@ void testMultiplyTranspose (int s, int runs, int range) {
 
 }
 
-void testMultiplyRecursive (int s, int runs, int range) {
+void testMultiplyRecursive (int s, int runs, int range, int realS) {
 
     int *timeNormal = new int[s-1];
     int *timeRecursive = new int[s-1];
-    int *timeRecursiveTranspose = new int[s-1];
+    int *timeTiled = new int[s-1];
     int counter = -1;
 
     for(int x = 2; x <= s; x++) {
@@ -556,13 +583,38 @@ void testMultiplyRecursive (int s, int runs, int range) {
         cerr << c[1] << '\n';
 
 
+        start = Clock::now();
+
+        for(int j = 0; j < runs; j++) {
+            for(int i = 0; i < m*p; i++) {
+                c[i] = 0;
+            }
+            multiplyTiledSquare(a,b,c,n,realS);
+        }
+
+        stop = Clock::now();
+        total = stop - start;
+        millis = std::chrono::duration_cast<std::chrono::milliseconds>(total).count();
+        timeTiled[counter] = millis;
+        cerr << c[1] << '\n';
+
+        for(int j = 0; j < runs; j++) {
+            for(int i = 0; i < m*p; i++) {
+                c[i] = 0;
+            }
+            multiplyTiledSquare(a,b,c,n,realS);
+        }
+
+        cerr << c[1] << '\n';
+
+
         delete[] a;
         delete[] b;
         delete[] c;
 
     }
     for (int i = 0; i <= counter; i++) {
-        cout << (i+2) << '\t' << timeNormal[i] << '\t' << timeRecursive[i] << '\n';
+        cout << (i+2) << '\t' << timeNormal[i] << '\t' << timeRecursive[i] << '\t' << timeTiled[i] << '\n';
     }
 }
 
@@ -570,15 +622,16 @@ void testMultiplyRecursive (int s, int runs, int range) {
 
 int main(int argc, char* argv[]) {
 
-    int size,test,range,offset,increment,runs;
-    if(argc != 5) {
-        cout << "Arguments are <test> <pow> <range> <runs>\n";
+    int size,test,range,offset,increment,runs,s;
+    if(argc != 6) {
+        cout << "Arguments are <test> <pow> <range> <runs> <s>\n";
         test = 1;
         size = 6;
         offset = 10000;
         increment = 1000;
         range = 100000;
         runs = 1000;
+        s = 4;
     }
     else {
         test = atoi(argv[1]);
@@ -587,6 +640,7 @@ int main(int argc, char* argv[]) {
         //increment = atoi(argv[4]);
         range = atoi(argv[3]);
         runs = atoi(argv[4]);
+        s = atoi(argv[5]);
 
     }
 
@@ -601,8 +655,32 @@ int main(int argc, char* argv[]) {
         testMultiplyTranspose(size,runs,range);
     }
     else if(test == 4) {
-        testMultiplyRecursive(size,runs,range);
+        testMultiplyRecursive(size,runs,range,s);
     }
+
+    /* Correct result will be
+    30
+    36
+    42
+    66
+    81
+    96
+    102
+    126
+    150
+     */
+
+    // Test tiledMultSquare
+    /*int* test1 = new int[9]{1,2,3,4,5,6,7,8,9};
+    int* test2 = new int[9]{1,2,3,4,5,6,7,8,9};
+    int* test3 = new int[9]{0,0,0,0,0,0,0,0,0};
+
+    multiplyTiledSquare(test1,test2,test3,3,3);
+
+    for(int i = 0; i < 9; i++) {
+        cout << test3[i] << '\n';
+    }*/
+
 
     // Test recursive multiply
     /*int* test1 = new int[9]{1,2,3,4,5,6,7,8,9};
