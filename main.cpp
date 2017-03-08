@@ -7,6 +7,259 @@
 
 using namespace std;
 
+void plus(int* a, int* b, int* c, int n) {
+    for(int i = 0; i < n; i++) {
+        for(int j = 0; j < n; j++) {
+            c[i*n+j] = a[i*n+j] + b[i*n+j];
+        }
+    }
+}
+
+void minus(int* a, int* b, int* c, int n) {
+    for(int i = 0; i < n; i++) {
+        for(int j = 0; j < n; j++) {
+            c[i*n+j] = a[i*n+j] + b[i*n+j];
+        }
+    }
+}
+
+// Virker kun med n=2^x
+// Se https://en.wikipedia.org/wiki/Strassen_algorithm
+void strassen(int* a, int* b, int* c, int n) {
+
+    if(n == 1) {
+        c[0] = a[0] * b[0];
+        return;
+    }
+
+    int newN = n/2;
+
+    int* a11 = new int[newN*newN];
+    int* a12 = new int[newN*newN];
+    int* a21 = new int[newN*newN];
+    int* a22 = new int[newN*newN];
+
+    int* b11 = new int[newN*newN];
+    int* b12 = new int[newN*newN];
+    int* b21 = new int[newN*newN];
+    int* b22 = new int[newN*newN];
+
+    int* c11 = new int[newN*newN];
+    int* c12 = new int[newN*newN];
+    int* c21 = new int[newN*newN];
+    int* c22 = new int[newN*newN];
+
+    int* m1 = new int[newN*newN];
+    int* m2 = new int[newN*newN];
+    int* m3 = new int[newN*newN];
+    int* m4 = new int[newN*newN];
+    int* m5 = new int[newN*newN];
+    int* m6 = new int[newN*newN];
+    int* m7 = new int[newN*newN];
+
+    int* resA = new int[newN*newN];
+    int* resB = new int[newN*newN];
+
+    // Fyld a11 .. a22 og b11 .. b22 ud
+    for(int i = 0; i < newN; i++) {
+        for(int j = 0; j < newN; j++) {
+            a11[i*newN+j] = a[i*n+j];
+        }
+    }
+    for(int i = 0; i < newN; i++) {
+        for(int j = newN; j < n; j++) {
+            a12[i*newN+j] = a[i*n+j];
+        }
+    }
+
+    for(int i = newN; i < n; i++) {
+        for(int j = 0; j < newN; j++) {
+            a21[i*newN+j] = a[i*n+j];
+        }
+    }
+
+    for(int i = newN; i < n; i++) {
+        for(int j = newN; j < n; j++) {
+            a22[i*newN+j] = a[i*n+j];
+        }
+    }
+
+    // B
+
+    for(int i = 0; i < newN; i++) {
+        for(int j = 0; j < newN; j++) {
+            b11[i*newN+j] = b[i*n+j];
+        }
+    }
+    for(int i = 0; i < newN; i++) {
+        for(int j = newN; j < n; j++) {
+            b12[i*newN+j] = b[i*n+j];
+        }
+    }
+
+    for(int i = newN; i < n; i++) {
+        for(int j = 0; j < newN; j++) {
+            b21[i*newN+j] = b[i*n+j];
+        }
+    }
+
+    for(int i = newN; i < n; i++) {
+        for(int j = newN; j < n; j++) {
+            b22[i*newN+j] = b[i*n+j];
+        }
+    }
+
+    // Udregn M matricerne
+
+    // M1 = (a11 + a22) * (b11 + b22)
+    plus(a11,a22,resA,newN);
+    plus(b11,b22,resB,newN);
+    strassen(resA,resB,m1,newN);
+
+    // M2 = (a21 + a22) * b11
+    plus(a21,a22,resA,newN);
+    strassen(resA,b11,m2,newN);
+
+    // M3 = a11 * (b12 - b22)
+    minus(b12,b22,resB,newN);
+    strassen(a11,resB,m3,newN);
+
+    // M4 = a22 * (b21 - b11)
+    minus(b21,b11,resB,newN);
+    strassen(a22,resB,m4,newN);
+
+    // M5 = (a11 + a12) * b22
+    plus(a11,a12,resA,newN);
+    strassen(resA,b22,m5,newN);
+
+    // M6 = (a21 - a11) * (b11 + b12)
+    minus(a21,a11,resA,newN);
+    plus(b11,b12,resB,newN);
+    strassen(resA,resB,m6,newN);
+
+    // M7 = (a12 - a22) * (b21 + b22)
+    minus(a12,a22,resA,newN);
+    plus(b21,b22,resB,newN);
+    strassen(resA,resB,m7,newN);
+
+    // Så finder vi C
+
+    // c11 = m1 + m4 - m5 + m7
+    plus(m1,m4,resA,newN);
+    minus(resA,m5,resB,newN);
+    plus(resB,m7,c11,newN);
+
+    // c12 = m3 + m5
+    plus(m3,m5,c12,newN);
+
+    // c21 = m2 + m4
+    plus(m2,m4,c21,newN);
+
+    // c22 = m1 - m2 + m3 + m6
+    minus(m1,m2,resA,newN);
+    plus(resA,m3,resB,newN);
+    plus(resB,m6,c22,newN);
+
+    // Fyld c11 ind i C
+    for(int i = 0; i < newN; i++) {
+        for(int j = 0; j < newN; j++) {
+            c[i*n+j] = c11[i*newN+j];
+        }
+    }
+
+    // Fyld c12 ind i C
+    for(int i = 0; i < newN; i++) {
+        for(int j = newN; j < n; j++) {
+            c[i*n+j] = c11[i*newN+j];
+        }
+    }
+
+    // Fyld c21 ind i C
+    for(int i = newN; i < n; i++) {
+        for(int j = 0; j < newN; j++) {
+            c[i*n+j] = c11[i*newN+j];
+        }
+    }
+
+    // Fyld c22 ind i C
+    for(int i = newN; i < n; i++) {
+        for(int j = newN; j < n; j++) {
+            c[i*n+j] = c11[i*newN+j];
+        }
+    }
+
+    // Ryd pænt op
+
+    delete[] a11;
+    delete[] a12;
+    delete[] a21;
+    delete[] a22;
+
+    delete[] b11;
+    delete[] b12;
+    delete[] b21;
+    delete[] b22;
+
+    delete[] c11;
+    delete[] c12;
+    delete[] c21;
+    delete[] c22;
+
+    delete[] m1;
+    delete[] m2;
+    delete[] m3;
+    delete[] m4;
+    delete[] m5;
+    delete[] m6;
+    delete[] m7;
+
+    delete[] resA;
+    delete[] resB;
+
+}
+
+// Virker kun med n = 2^x
+int* multiplyRecursiveLayoutSquare(int* a, int* b, int* c, int n) {
+
+    // matrix[i][j]
+    for(int i = 0; i < n; i++) {
+        for(int j = 0; j < n; j++) {
+            for(int k = 0; k < n; k++) {
+
+                // Figure out positions
+                unsigned short i2 = (short) i;
+                unsigned short j2 = (short) j;
+                unsigned short k2 = (short) k;
+                unsigned int pos1 = 0;
+                unsigned int pos2 = 0;
+                unsigned int pos3 = 0;
+                // z |= (x & 1U << i) << i | (y & 1U << i) << (i + 1);
+                // Taken from http://graphics.stanford.edu/~seander/bithacks.html#InterleaveTableObvious
+                for (int x = 0; x < 16; x++) {
+                    pos1 |= (i2 & 1U << x) << x | (j2 & 1U << x) << (x + 1);
+                }
+                for (int x = 0; x < 16; x++) {
+                    pos2 |= (i2 & 1U << x) << x | (k2 & 1U << x) << (x + 1);
+                }
+                for (int x = 0; x < 16; x++) {
+                    pos3 |= (k2 & 1U << x) << x | (j2 & 1U << x) << (x + 1);
+                }
+
+                // c[i][j] += a[i][k] * b[k][j]
+                c[pos1] += a[pos2] * b[pos3];
+
+                cout << i << "," << j << "," << k << '\n';
+                cout << pos1 << "," << pos2 << "," << pos3 << '\n';
+                cout << a[pos2] * b[pos3] << "," << a[pos2] << "," << b[pos3] << '\n';
+                cout << "---\n";
+            }
+        }
+    }
+
+    return c;
+
+}
+
 int* multiplyTiledSquare(int* a, int* b, int* c, int n, int s) {
 
     int to = n/s;
@@ -669,6 +922,18 @@ int main(int argc, char* argv[]) {
     126
     150
      */
+
+
+    // Test multiplyRecursiveStructureSquare
+    /*int* test1 = new int[16]{1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16};
+    int* test2 = new int[16]{1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16};
+    int* test3 = new int[16]{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+
+    multiplyRecursiveLayoutSquare(test1,test2,test3,3);
+
+    for(int i = 0; i < 9; i++) {
+        cout << test3[i] << '\n';
+    }*/
 
     // Test tiledMultSquare
     /*int* test1 = new int[9]{1,2,3,4,5,6,7,8,9};
