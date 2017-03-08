@@ -571,7 +571,7 @@ void testMultiplyRecursive (int s, int runs, int range) {
 int main(int argc, char* argv[]) {
 
     int size,test,range,offset,increment,runs;
-    if(argc != 4) {
+    if(argc != 5) {
         cout << "Arguments are <test> <pow> <range> <runs>\n";
         test = 1;
         size = 6;
