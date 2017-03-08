@@ -154,12 +154,7 @@ int* buildSkewedMatrix(int m, int n, int range) {
     return matrix;
 }
 
-int* multiplyMatrixRow(int* a, int m, int n, int* b, int p) {
-
-    int* c = new int[m*p];
-    for(int i = 0; i < m*p; i++) {
-        c[i] = 0;
-    }
+int* multiplyMatrixRow(int* a, int m, int n, int* b, int p, int* c) {
 
     // matrix[i][j]
     for(int i = 0; i < m; i++) {
@@ -175,12 +170,7 @@ int* multiplyMatrixRow(int* a, int m, int n, int* b, int p) {
 
 }
 
-int* multiplyMatrixColumn(int* a, int m, int n, int* b, int p) {
-
-    int* c = new int[m*p];
-    for(int i = 0; i < m*p; i++) {
-        c[i] = 0;
-    }
+int* multiplyMatrixColumn(int* a, int m, int n, int* b, int p, int* c) {
 
     // matrix[i][j]
     for(int j = 0; j < p; j++) {
@@ -200,12 +190,7 @@ int* multiplyMatrixColumn(int* a, int m, int n, int* b, int p) {
  * A is row ordered, B is column ordered
  */
 
-int* multiplyMatrixMixed(int* a, int m, int n, int* b, int p) {
-
-    int* c = new int[m*p];
-    for(int i = 0; i < m*p; i++) {
-        c[i] = 0;
-    }
+int* multiplyMatrixMixed(int* a, int m, int n, int* b, int p, int* c) {
 
     // matrix[i][j]
     for(int i = 0; i < m; i++) {
@@ -223,109 +208,149 @@ int* multiplyMatrixMixed(int* a, int m, int n, int* b, int p) {
 
 //void testRowVsColumn(int m, int n, int p, int range) {
 
-void testRowVsColumnVsMixedSquare(int s, int offset, int increment, int range) {
+//void testRowVsColumnVsMixedSquare(int s, int offset, int increment, int range) {
 
-    int* timeRow = new int[(s-offset)/increment+1];
+void testRowVsColumnVsMixedSquare(int s, int runs, int range) {
+
+    /*int* timeRow = new int[(s-offset)/increment+1];
     int* timeCol = new int[(s-offset)/increment+1];
-    int* timeMix = new int[(s-offset)/increment+1];
+    int* timeMix = new int[(s-offset)/increment+1];*/
+    int* timeRow = new int[s-1];
+    int* timeCol = new int[s-1];
+    int* timeMix = new int[s-1];
+
     int counter = -1;
 
-    for(int x = offset; x <= s; x=x+increment) {
+    for(int x = 2; x <= s; x++) {
 
+        int temp = pow(3,x);
         counter++;
-        int m = x;
-        int n = x;
-        int p = x;
+        int m = temp;
+        int n = temp;
+        int p = temp;
 
         cerr << "Building " << x << '\n';
         int* a = buildSkewedMatrix(m,n,range);
         int* b = buildSkewedMatrix(n,p,range);
+        int* c = new int[m*p];
         cerr << "Finished\n";
 
         typedef std::chrono::system_clock Clock;
         auto start = Clock::now();
 
-        int* cRow = multiplyMatrixRow(a,m,n,b,p);
+        for(int j = 0; j < runs; j++) {
+            for(int i = 0; i < m*p; i++) {
+                c[i] = 0;
+            }
+            multiplyMatrixRow(a,m,n,b,p,c);
+        }
+
+
 
         auto stop = Clock::now();
         auto total = stop-start;
         long millis = std::chrono::duration_cast<std::chrono::milliseconds>(total).count();
         timeRow[counter] = millis;
-        cerr << cRow[1] << '\n';
+        cerr << c[1] << '\n';
 
-        int* cRow2 = multiplyMatrixRow(a,m,n,b,p);
+        for(int j = 0; j < runs; j++) {
+            for(int i = 0; i < m*p; i++) {
+                c[i] = 0;
+            }
+            multiplyMatrixRow(a,m,n,b,p,c);
+        }
 
-        cerr << cRow2[1] << '\n';
+        cerr << c[1] << '\n';
 
 
         start = Clock::now();
 
-        int* cCol = multiplyMatrixColumn(a,m,n,b,p);
+        for(int j = 0; j < runs; j++) {
+            for(int i = 0; i < m*p; i++) {
+                c[i] = 0;
+            }
+            multiplyMatrixColumn(a,m,n,b,p,c);
+        }
 
         stop = Clock::now();
         total = stop-start;
         millis = std::chrono::duration_cast<std::chrono::milliseconds>(total).count();
         timeCol[counter] = millis;
-        cerr << cCol[1] << '\n';
+        cerr << c[1] << '\n';
 
-        int* cCol2 = multiplyMatrixColumn(a,m,n,b,p);
+        for(int j = 0; j < runs; j++) {
+            for(int i = 0; i < m*p; i++) {
+                c[i] = 0;
+            }
+            multiplyMatrixColumn(a,m,n,b,p,c);
+        }
 
-        cerr << cCol2[1] << '\n';
+        cerr << c[1] << '\n';
 
 
         start = Clock::now();
 
-        int* cMix = multiplyMatrixMixed(a,m,n,b,p);
+        for(int j = 0; j < runs; j++) {
+            for(int i = 0; i < m*p; i++) {
+                c[i] = 0;
+            }
+            multiplyMatrixMixed(a,m,n,b,p,c);
+        }
 
         stop = Clock::now();
         total = stop-start;
         millis = std::chrono::duration_cast<std::chrono::milliseconds>(total).count();
         timeMix[counter] = millis;
-        cerr << cMix[1] << '\n';
+        cerr << c[1] << '\n';
 
-        int* cMix2 = multiplyMatrixMixed(a,m,n,b,p);
+        for(int j = 0; j < runs; j++) {
+            for(int i = 0; i < m*p; i++) {
+                c[i] = 0;
+            }
+            multiplyMatrixMixed(a,m,n,b,p,c);
+        }
 
-        cerr << cMix2[1] << '\n';
+        cerr << c[1] << '\n';
 
         delete[] a;
         delete[] b;
-        delete[] cRow;
-        delete[] cRow2;
-        delete[] cCol;
-        delete[] cCol2;
-        delete[] cMix;
-        delete[] cMix2;
+        delete[] c;
     }
 
     for(int i = 0; i <= counter; i++) {
-        cout << (offset+i*increment) << '\t' << timeRow[i] << '\t' << timeCol[i] << '\t' << timeMix[i] << '\n';
+        cout << (i+2) << '\t' << timeRow[i] << '\t' << timeCol[i] << '\t' << timeMix[i] << '\n';
     }
 
 
 
 }
 
-void testTranspose(int s, int offset, int increment, int range) {
+void testTranspose(int s, int runs, int range) {
 
-    int* timeClassic = new int[(s-offset)/increment+1];
-    int* timeRecursive = new int[(s-offset)/increment+1];
+    int* timeClassic = new int[s-1];
+    int* timeRecursive = new int[s-1];
     int counter = -1;
 
-    for(int x = offset; x <= s; x=x+increment) {
+    for(int x = 2; x <= s; x++) {
+        int temp = pow(3,x);
         counter++;
-        int m = x;
-        int n = x;
-        int p = x;
+        int m = temp;
+        int n = temp;
+        int p = temp;
 
         cerr << "Building " << x << '\n';
         int* a = buildSkewedMatrix(m,n,range);
-        cerr << "Finished\n";
         int* b = new int[m*n];
+        cerr << "Finished\n";
+
 
         typedef std::chrono::system_clock Clock;
         auto start = Clock::now();
 
-        transposeNaive(a,b,m,n);
+        for(int j = 0; j < runs; j++) {
+            transposeNaive(a,b,m,n);
+        }
+
 
         auto stop = Clock::now();
         auto total = stop-start;
@@ -333,14 +358,19 @@ void testTranspose(int s, int offset, int increment, int range) {
         timeClassic[counter] = millis;
         cerr << b[1] << '\n';
 
-        transposeNaive(a,b,m,n);
+        for(int j = 0; j < runs; j++) {
+            transposeNaive(a,b,m,n);
+        }
 
         cerr << b[1] << '\n';
 
 
         start = Clock::now();
 
-        transposeRec(a,b,0,0,m,n,m,n);
+        for(int j = 0; j < runs; j++) {
+            transposeRec(a,b,0,0,m,n,m,n);
+        }
+
 
         stop = Clock::now();
         total = stop-start;
@@ -348,7 +378,9 @@ void testTranspose(int s, int offset, int increment, int range) {
         timeRecursive[counter] = millis;
         cerr << b[1] << '\n';
 
-        transposeRec(a,b,0,0,m,n,m,n);
+        for(int j = 0; j < runs; j++) {
+            transposeRec(a,b,0,0,m,n,m,n);
+        }
 
         cerr << b[1] << '\n';
 
@@ -359,119 +391,154 @@ void testTranspose(int s, int offset, int increment, int range) {
     }
 
     for(int i = 0; i <= counter; i++) {
-        cout << (offset+i*increment) << '\t' << timeClassic[i] << '\t' << timeRecursive[i] << '\n';
+        cout << (i+2) << '\t' << timeClassic[i] << '\t' << timeRecursive[i] << '\n';
     }
 
 }
 
-void testMultiplyTranspose (int s, int offset, int increment, int range) {
+void testMultiplyTranspose (int s, int runs, int range) {
 
-    int* timeNoTranspose = new int[(s-offset)/increment+1];
-    int* timeWithTranspose = new int[(s-offset)/increment+1];
+    int* timeNoTranspose = new int[s-1];
+    int* timeWithTranspose = new int[s-1];
     int counter = -1;
 
-    for(int x = offset; x <= s; x=x+increment) {
+    for(int x = 2; x <= s; x++) {
+        int temp = pow(3,x);
         counter++;
-        int m = x;
-        int n = x;
-        int p = x;
+        int m = temp;
+        int n = temp;
+        int p = temp;
 
         cerr << "Building " << x << '\n';
         int* a = buildSkewedMatrix(m,n,range);
         int* b = buildSkewedMatrix(m,n,range);
+        int* c = new int[m*p];
+        int* d = new int[m*n];
         cerr << "Finished\n";
-        int* c = new int[m*n];
+
 
         typedef std::chrono::system_clock Clock;
         auto start = Clock::now();
 
-        int* cRow = multiplyMatrixRow(a,m,n,b,p);
+        for(int j = 0; j < runs; j++) {
+            for(int i = 0; i < m*p; i++) {
+                c[i] = 0;
+            }
+            multiplyMatrixRow(a,m,n,b,p,c);
+        }
 
         auto stop = Clock::now();
         auto total = stop-start;
         long millis = std::chrono::duration_cast<std::chrono::milliseconds>(total).count();
         timeNoTranspose[counter] = millis;
-        cerr << cRow[1] << '\n';
+        cerr << c[1] << '\n';
 
-        int* cRow2 = multiplyMatrixRow(a,m,n,b,p);
+        for(int j = 0; j < runs; j++) {
+            for(int i = 0; i < m*p; i++) {
+                c[i] = 0;
+            }
+            multiplyMatrixRow(a,m,n,b,p,c);
+        }
 
-        cerr << cRow2[1] << '\n';
+        cerr << c[1] << '\n';
 
 
         start = Clock::now();
 
-        transposeNaive(b,c,m,n);
-        int* cMix = multiplyMatrixMixed(a,m,n,c,p);
+        for(int j = 0; j < runs; j++) {
+            for(int i = 0; i < m*p; i++) {
+                c[i] = 0;
+            }
+            transposeNaive(b,d,m,n);
+            multiplyMatrixMixed(a,m,n,d,p,c);
+        }
 
         stop = Clock::now();
         total = stop-start;
         millis = std::chrono::duration_cast<std::chrono::milliseconds>(total).count();
         timeWithTranspose[counter] = millis;
-        cerr << cMix[1] << '\n';
+        cerr << c[1] << '\n';
 
-        transposeNaive(b,c,m,n);
-        int* cMix2 = multiplyMatrixMixed(a,m,n,c,p);
+        for(int j = 0; j < runs; j++) {
+            for(int i = 0; i < m*p; i++) {
+                c[i] = 0;
+            }
+            transposeNaive(b,d,m,n);
+            multiplyMatrixMixed(a,m,n,d,p,c);
+        }
 
-        cerr << cMix2[1] << '\n';
+        cerr << c[1] << '\n';
 
 
 
         delete[] a;
         delete[] b;
         delete[] c;
-        delete[] cRow;
-        delete[] cRow2;
-        delete[] cMix;
-        delete[] cMix2;
+        delete[] d;
     }
 
     for(int i = 0; i <= counter; i++) {
-        cout << (offset+i*increment) << '\t' << timeNoTranspose[i] << '\t' << timeWithTranspose[i] << '\n';
+        cout << (i+2) << '\t' << timeNoTranspose[i] << '\t' << timeWithTranspose[i] << '\n';
     }
 
 }
 
-void testMultiplyRecursive (int s, int offset, int increment, int range) {
+void testMultiplyRecursive (int s, int runs, int range) {
 
-    int *timeNormal = new int[(s - offset) / increment+1];
-    int *timeRecursive = new int[(s - offset) / increment+1];
-    int *timeRecursiveTranspose = new int[(s - offset) / increment+1];
+    int *timeNormal = new int[s-1];
+    int *timeRecursive = new int[s-1];
+    int *timeRecursiveTranspose = new int[s-1];
     int counter = -1;
 
-    for (int x = offset; x <= s; x = x + increment) {
+    for(int x = 2; x <= s; x++) {
+        int temp = pow(3,x);
         counter++;
-        int m = x;
-        int n = x;
-        int p = x;
+        int m = temp;
+        int n = temp;
+        int p = temp;
 
         cerr << "Building " << x << '\n';
         int *a = buildSkewedMatrix(m, n, range);
         int *b = buildSkewedMatrix(n, p, range);
-        cerr << "Finished\n";
         int *c = new int[m * p];
+        cerr << "Finished\n";
+
 
 
         typedef std::chrono::system_clock Clock;
         auto start = Clock::now();
 
-        int *cRow = multiplyMatrixRow(a, m, n, b, p);
+        for(int j = 0; j < runs; j++) {
+            for(int i = 0; i < m*p; i++) {
+                c[i] = 0;
+            }
+            multiplyMatrixRow(a,m,n,b,p,c);
+        }
 
         auto stop = Clock::now();
         auto total = stop - start;
         long millis = std::chrono::duration_cast<std::chrono::milliseconds>(total).count();
         timeNormal[counter] = millis;
-        cerr << cRow[1] << '\n';
+        cerr << c[1] << '\n';
 
-        int *cRow2 = multiplyMatrixRow(a, m, n, b, p);
+        for(int j = 0; j < runs; j++) {
+            for(int i = 0; i < m*p; i++) {
+                c[i] = 0;
+            }
+            multiplyMatrixRow(a,m,n,b,p,c);
+        }
+
+        cerr << c[1] << '\n';
 
 
         start = Clock::now();
 
-        // Skal gøres uden for funktionen, men er en del af det
-        for (int i = 0; i < m * p; i++) {
-            c[i] = 0;
+        for(int j = 0; j < runs; j++) {
+            for(int i = 0; i < m*p; i++) {
+                c[i] = 0;
+            }
+            multiplyRecursiveRow(a, b, c, 0, 0, 0, m, n, p, m, n, p);
         }
-        multiplyRecursiveRow(a, b, c, 0, 0, 0, m, n, p, m, n, p);
 
         stop = Clock::now();
         total = stop - start;
@@ -479,10 +546,12 @@ void testMultiplyRecursive (int s, int offset, int increment, int range) {
         timeRecursive[counter] = millis;
         cerr << c[1] << '\n';
 
-        for (int i = 0; i < m * p; i++) {
-            c[i] = 0;
+        for(int j = 0; j < runs; j++) {
+            for(int i = 0; i < m*p; i++) {
+                c[i] = 0;
+            }
+            multiplyRecursiveRow(a, b, c, 0, 0, 0, m, n, p, m, n, p);
         }
-        multiplyRecursiveRow(a, b, c, 0, 0, 0, m, n, p, m, n, p);
 
         cerr << c[1] << '\n';
 
@@ -490,11 +559,10 @@ void testMultiplyRecursive (int s, int offset, int increment, int range) {
         delete[] a;
         delete[] b;
         delete[] c;
-        delete[] cRow;
-        delete[] cRow2;
+
     }
     for (int i = 0; i <= counter; i++) {
-        cout << (offset + i * increment) << '\t' << timeNormal[i] << '\t' << timeRecursive[i] << '\n';
+        cout << (i+2) << '\t' << timeNormal[i] << '\t' << timeRecursive[i] << '\n';
     }
 }
 
@@ -502,35 +570,38 @@ void testMultiplyRecursive (int s, int offset, int increment, int range) {
 
 int main(int argc, char* argv[]) {
 
-    int size,test,range,offset,increment;
-    if(argc != 6) {
-        cout << "Arguments are <test> <max size> <min size> <increment> <range>\n";
-        test = 2;
-        size = 10000;
+    int size,test,range,offset,increment,runs;
+    if(argc != 4) {
+        cout << "Arguments are <test> <pow> <range> <runs>\n";
+        test = 1;
+        size = 6;
         offset = 10000;
         increment = 1000;
         range = 100000;
+        runs = 1000;
     }
     else {
         test = atoi(argv[1]);
         size = atoi(argv[2]);
-        offset = atoi(argv[3]);
-        increment = atoi(argv[4]);
-        range = atoi(argv[5]);
+        //offset = atoi(argv[3]);
+        //increment = atoi(argv[4]);
+        range = atoi(argv[3]);
+        runs = atoi(argv[4]);
+
     }
 
 
     if(test == 1) {
-        testRowVsColumnVsMixedSquare(size,offset,increment,range);
+        testRowVsColumnVsMixedSquare(size,runs,range);
     }
     else if(test == 2) {
-        testTranspose(size,offset,increment,range);
+        testTranspose(size,runs,range);
     }
     else if(test == 3) {
-        testMultiplyTranspose(size,offset,increment,range);
+        testMultiplyTranspose(size,runs,range);
     }
     else if(test == 4) {
-        testMultiplyRecursive(size,offset,increment,range);
+        testMultiplyRecursive(size,runs,range);
     }
 
     // Test recursive multiply
