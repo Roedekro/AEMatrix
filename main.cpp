@@ -18,7 +18,7 @@ void plusMethod(int* a, int* b, int* c, int n) {
 void minusMethod(int* a, int* b, int* c, int n) {
     for(int i = 0; i < n; i++) {
         for(int j = 0; j < n; j++) {
-            c[i*n+j] = a[i*n+j] + b[i*n+j];
+            c[i*n+j] = a[i*n+j] - b[i*n+j];
         }
     }
 }
@@ -114,7 +114,7 @@ void strassen(int* a, int* b, int* c, int n) {
         }
     }
 
-    for(int i = 0; i < new2N; i++) {
+    /*for(int i = 0; i < new2N; i++) {
         m1[i] = 0;
     }
     for(int i = 0; i < new2N; i++) {
@@ -134,7 +134,18 @@ void strassen(int* a, int* b, int* c, int n) {
     }
     for(int i = 0; i < new2N; i++) {
         m7[i] = 0;
-    }
+    }*/
+
+    /*cout << "-1- " << n << '\n';
+    cout << a11[0] << '\n';
+    cout << a12[0] << '\n';
+    cout << a21[0] << '\n';
+    cout << a22[0] << '\n';
+    cout << b11[0] << '\n';
+    cout << b12[0] << '\n';
+    cout << b21[0] << '\n';
+    cout << b22[0] << '\n';
+    cout << "-1- " << n << '\n';*/
 
     // Udregn M matricerne
 
@@ -149,7 +160,9 @@ void strassen(int* a, int* b, int* c, int n) {
 
     // M3 = a11 * (b12 - b22)
     minusMethod(b12,b22,resB,newN);
+    //cout << "check1 " << resB[0] << '\n';
     strassen(a11,resB,m3,newN);
+    //cout << "check2 " << m3[0] << '\n';
 
     // M4 = a22 * (b21 - b11)
     minusMethod(b21,b11,resB,newN);
@@ -187,6 +200,14 @@ void strassen(int* a, int* b, int* c, int n) {
     plusMethod(resA,m3,resB,newN);
     plusMethod(resB,m6,c22,newN);
 
+    /*cout << "M1: " << m1[0] << '\n';
+    cout << "M2: " << m2[0] << '\n';
+    cout << "M3: " << m3[0] << '\n';
+    cout << "M4: " << m4[0] << '\n';
+    cout << "M5: " << m5[0] << '\n';
+    cout << "M6: " << m6[0] << '\n';
+    cout << "M7: " << m7[0] << '\n';*/
+
     // Fyld c11 ind i C
     for(int i = 0; i < newN; i++) {
         for(int j = 0; j < newN; j++) {
@@ -197,23 +218,25 @@ void strassen(int* a, int* b, int* c, int n) {
     // Fyld c12 ind i C
     for(int i = 0; i < newN; i++) {
         for(int j = 0; j < newN; j++) {
-            c[i*n+j+newN] = c11[i*newN+j];
+            c[i*n+j+newN] = c12[i*newN+j];
         }
     }
 
     // Fyld c21 ind i C
     for(int i = 0; i < newN; i++) {
         for(int j = 0; j < newN; j++) {
-            c[(i+newN)*n+j] = c11[i*newN+j];
+            c[(i+newN)*n+j] = c21[i*newN+j];
         }
     }
 
     // Fyld c22 ind i C
     for(int i = 0; i < newN; i++) {
         for(int j = 0; j < newN; j++) {
-            c[(i+newN)*n+j+newN] = c11[i*newN+j];
+            c[(i+newN)*n+j+newN] = c22[i*newN+j];
         }
     }
+
+    //cout << n << " " << c[0] << " " << c11[0] << '\n';
 
     // Ryd pænt op
 
@@ -251,6 +274,9 @@ void strassen(int* a, int* b, int* c, int n) {
 void strassenBottom(int* a, int* b, int* c, int n) {
 
     if(n <= 128) {
+        for(int i = 0; i < n*n; i++) {
+            c[i] = 0;
+        }
         // matrix[i][j]
         for(int i = 0; i < n; i++) {
             for(int j = 0; j < n; j++) {
@@ -345,7 +371,7 @@ void strassenBottom(int* a, int* b, int* c, int n) {
         }
     }
 
-    for(int i = 0; i < new2N; i++) {
+    /*for(int i = 0; i < new2N; i++) {
         m1[i] = 0;
     }
     for(int i = 0; i < new2N; i++) {
@@ -365,7 +391,7 @@ void strassenBottom(int* a, int* b, int* c, int n) {
     }
     for(int i = 0; i < new2N; i++) {
         m7[i] = 0;
-    }
+    }*/
 
     // Udregn M matricerne
 
@@ -428,21 +454,21 @@ void strassenBottom(int* a, int* b, int* c, int n) {
     // Fyld c12 ind i C
     for(int i = 0; i < newN; i++) {
         for(int j = 0; j < newN; j++) {
-            c[i*n+j+newN] = c11[i*newN+j];
+            c[i*n+j+newN] = c12[i*newN+j];
         }
     }
 
     // Fyld c21 ind i C
     for(int i = 0; i < newN; i++) {
         for(int j = 0; j < newN; j++) {
-            c[(i+newN)*n+j] = c11[i*newN+j];
+            c[(i+newN)*n+j] = c21[i*newN+j];
         }
     }
 
     // Fyld c22 ind i C
     for(int i = 0; i < newN; i++) {
         for(int j = 0; j < newN; j++) {
-            c[(i+newN)*n+j+newN] = c11[i*newN+j];
+            c[(i+newN)*n+j+newN] = c22[i*newN+j];
         }
     }
 
@@ -534,7 +560,7 @@ int* multiplyTiledSquare(int* a, int* b, int* c, int n, int s) {
                         for(int k = z*s; (k < (z+1)*s && k < n); k++) {
                             // c[i][j] += a[i][k] * b[k][j]
                             c[i*n+j] += a[i*n+k] * b[k*n+j];
-                            cout << x << "," << y << "," << z << "\t" << i << "," << j << "," << z << '\n';
+                            //cout << x << "," << y << "," << z << "\t" << i << "," << j << "," << z << '\n';
                         }
                     }
                 }
@@ -1272,7 +1298,7 @@ int main(int argc, char* argv[]) {
     if(argc != 6) {
         cout << "Arguments are <test> <pow> <range> <runs> <s>\n";
         test = 5;
-        size = 9;
+        size = 5;
         offset = 10000;
         increment = 1000;
         range = 100000;
@@ -1307,7 +1333,7 @@ int main(int argc, char* argv[]) {
         testStrassenRecursiveAndStrassenBottom(size,runs,range);
     }
 
-    /* Correct result will be
+    /* 3x3 Correct result will be
     30
     36
     42
@@ -1319,13 +1345,37 @@ int main(int argc, char* argv[]) {
     150
      */
 
+    /* For 4x4 er de 9 første entries:
+    90
+    100
+    110
+    120
+    202
+    228
+    254
+    280
+    314
+     */
 
-    // Test multiplyRecursiveStructureSquare
+    // Test Strassen
     /*int* test1 = new int[16]{1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16};
     int* test2 = new int[16]{1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,16};
     int* test3 = new int[16]{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
-    multiplyRecursiveLayoutSquare(test1,test2,test3,3);
+    strassen(test1,test2,test3,4);
+
+    cout << "---\n";
+    for(int i = 0; i < 9; i++) {
+        cout << test3[i] << '\n';
+    }*/
+
+
+    // Test multiplyRecursiveStructureSquare
+    /*int* test1 = new int[16]{1,2,5,6,3,4,7,8,9,10,13,14,11,12,15,16};
+    int* test2 = new int[16]{1,2,5,6,3,4,7,8,9,10,13,14,11,12,15,16};
+    int* test3 = new int[16]{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
+
+    multiplyRecursiveLayoutSquare(test1,test2,test3,4);
 
     for(int i = 0; i < 9; i++) {
         cout << test3[i] << '\n';
