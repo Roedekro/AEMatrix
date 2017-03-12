@@ -550,6 +550,72 @@ int* multiplyTiledSquare(int* a, int* b, int* c, int n, int s) {
     if(n % s != 0) {
         to++;
     }
+    int size = s*s;
+    int offsetSizeN = (n % s); // n of offset
+    int offsetSize = offsetSizeN*s; // size of offset
+    int offset = size-offsetSize;
+
+    for(int x = 0; x < to; x++) {
+        for(int y = 0; y < to; y++) {
+            for(int z = 0; z < to; z++) {
+                // matrix[i][j]
+                int sA = s;
+                int sB = s;
+                int sC = s;
+                int startA = (x*to+z)*size;
+                int startC = (x*to+y)*size;
+                if(x>0) {
+                    startA = startA - x*offset;
+                    startC = startC - x*offset;
+                }
+                if(x == to-1) {
+                    startA = startA - offset*z;
+                    startC = startC - offset*y;
+                }
+
+                int startB = (z*to+y)*size;
+                if(z>0) {
+                    startB = startB - z*offset;
+                }
+                if(y == to-1) {
+                    sC = offsetSizeN;
+                    sB = offsetSizeN;
+                }
+                if(z == to-1) {
+                    sA = offsetSizeN;
+                    startB = startB - offset*y;
+                }
+                int offsetX = x*s;
+                int offSetY = y*s;
+                int offsetZ = z*s;
+                for(int i = 0; (i < s && i+offsetX < n); i++) {
+                    for(int j = 0; (j < s && j+offSetY < n); j++) {
+                        for(int k = 0; (k < s && k+offsetZ < n); k++) {
+                            // c[i][j] += a[i][k] * b[k][j]
+                            c[startC+i*sC+j] += a[startA+i*sA+k] * b[startB+k*sB+j];
+                            /*cout << x << "," << y << "," << z << "\t" << i << "," << j << "," << k << '\n';
+                            cout << startC << "," << startA << "," << startB << '\n';
+                            cout << sC << "," << sA<< "," << sB << '\n';
+                            cout << startC+i*sC+j << "," << startA+i*sA+k << "," << startB+k*sB+j << '\n';
+                            cout << c[startC+i*sC+j] << "," << a[startA+i*sA+k] << "," << b[startB+k*sB+j] << '\n';
+                            cout << "---\n";*/
+
+                        }
+                    }
+                }
+            }
+        }
+
+    }
+    return c;
+}
+
+/*int* multiplyTiledSquare(int* a, int* b, int* c, int n, int s) {
+
+    int to = n/s;
+    if(n % s != 0) {
+        to++;
+    }
 
     for(int x = 0; x < to; x++) {
         for(int y = 0; y < to; y++) {
@@ -569,7 +635,7 @@ int* multiplyTiledSquare(int* a, int* b, int* c, int n, int s) {
 
     }
     return c;
-}
+}*/
 
 void multiplyRecursiveMixed(int* a, int* b, int* c, int mStart, int nStart, int pStart, int mStop, int nStop, int pStop,
                              int mOrig, int nOrig, int pOrig) {
@@ -1297,8 +1363,8 @@ int main(int argc, char* argv[]) {
     int size,test,range,offset,increment,runs,s;
     if(argc != 6) {
         cout << "Arguments are <test> <pow> <range> <runs> <s>\n";
-        test = 5;
-        size = 5;
+        test = 4;
+        size = 7;
         offset = 10000;
         increment = 1000;
         range = 100000;
@@ -1386,7 +1452,7 @@ int main(int argc, char* argv[]) {
     int* test2 = new int[9]{1,2,3,4,5,6,7,8,9};
     int* test3 = new int[9]{0,0,0,0,0,0,0,0,0};
 
-    multiplyTiledSquare(test1,test2,test3,3,3);
+    multiplyTiledSquare(test1,test2,test3,3,2);
 
     for(int i = 0; i < 9; i++) {
         cout << test3[i] << '\n';
