@@ -679,6 +679,55 @@ void multiplyRecursiveMixed(int* a, int* b, int* c, int mStart, int nStart, int 
     }
 }
 
+void multiplyDoubleRecursive(int* a, int* b, int* c, int mStart, int nStart, int pStart, int mStop, int nStop, int pStop,
+                          int mOrig, int nOrig, int pOrig) {
+
+    int mDif = mStop-mStart;
+    int nDif = nStop-nStart;
+    int pDif = pStop-pStart;
+
+    //cout << mStart << "," << nStart << "," << pStart << "\t" << mDif << "," << nDif << "," << pDif << '\n';
+    if(mDif == 1 && nDif == 1 && pDif == 1) {
+        unsigned short i2 = (unsigned short) mStart;
+        unsigned short j2 = (unsigned short) pStart;
+        unsigned short k2 = (unsigned short) nStart;
+        unsigned int pos1 = 0;
+        unsigned int pos2 = 0;
+        unsigned int pos3 = 0;
+
+        for (int x = 0; x < 16; x++) {
+            pos1 |= (i2 & 1U << x) << x | (j2 & 1U << x) << (x + 1);
+        }
+        for (int x = 0; x < 16; x++) {
+            pos2 |= (i2 & 1U << x) << x | (k2 & 1U << x) << (x + 1);
+        }
+        for (int x = 0; x < 16; x++) {
+            pos3 |= (k2 & 1U << x) << x | (j2 & 1U << x) << (x + 1);
+        }
+        // c[i][j] += a[i][k] * b[k][j]
+        c[pos1] += a[pos2] * b[pos3];
+        /*cout << "Added " << a[mStart*nOrig+nStart] * b[nStart*pOrig+pStart] << " to " << mStart*pOrig+pStart << " totalling "
+             << c[mStart*pOrig+pStart] << '\n';*/
+    }
+    else {
+        if(mDif >= max(nDif, pDif)) {
+            int newM = (mStart + mStop)/2;
+            multiplyDoubleRecursive(a,b,c,mStart,nStart,pStart,newM,nStop,pStop,mOrig,nOrig,pOrig);
+            multiplyDoubleRecursive(a,b,c,newM,nStart,pStart,mStop,nStop,pStop,mOrig,nOrig,pOrig);
+        }
+        else if(nDif >= max(mDif,pDif)) {
+            int newN = (nStart+nStop)/2;
+            multiplyDoubleRecursive(a,b,c,mStart,nStart,pStart,mStop,newN,pStop,mOrig,nOrig,pOrig);
+            multiplyDoubleRecursive(a,b,c,mStart,newN,pStart,mStop,nStop,pStop,mOrig,nOrig,pOrig);
+        }
+        else {
+            int newP = (pStart+pStop)/2;
+            multiplyDoubleRecursive(a,b,c,mStart,nStart,pStart,mStop,nStop,newP,mOrig,nOrig,pOrig);
+            multiplyDoubleRecursive(a,b,c,mStart,nStart,newP,mStop,nStop,pStop,mOrig,nOrig,pOrig);
+        }
+    }
+}
+
 void multiplyRecursiveRow(int* a, int* b, int* c, int mStart, int nStart, int pStart, int mStop, int nStop, int pStop,
                             int mOrig, int nOrig, int pOrig) {
 
@@ -1354,6 +1403,59 @@ void testStrassenRecursiveAndStrassenBottom(int s, int runs, int range) {
 
 }
 
+void testDoubleRecursive(int s, int runs, int range) {
+
+    int *timeDouble = new int[s - 4];
+    int counter = -1;
+
+    for (int x = 5; x <= s; x++) {
+        int temp = pow(2, x);
+        counter++;
+        int m = temp;
+        int n = temp;
+        int p = temp;
+
+        cerr << "Building " << x << '\n';
+        int *a = buildSkewedMatrix(m, n, range);
+        int *b = buildSkewedMatrix(n, p, range);
+        int *c = new int[m * p];
+        cerr << "Finished\n";
+
+
+        typedef std::chrono::system_clock Clock;
+        auto start = Clock::now();
+
+        for (int j = 0; j < runs; j++) {
+            for (int i = 0; i < m * p; i++) {
+                c[i] = 0;
+            }
+            multiplyDoubleRecursive(a, b, c, 0, 0, 0, m, n, p, m, n, p);
+        }
+
+        auto stop = Clock::now();
+        auto total = stop - start;
+        long millis = std::chrono::duration_cast<std::chrono::milliseconds>(total).count();
+        timeDouble[counter] = millis;
+        cerr << c[1] << '\n';
+
+        for (int j = 0; j < runs; j++) {
+            for (int i = 0; i < m * p; i++) {
+                c[i] = 0;
+            }
+            multiplyDoubleRecursive(a, b, c, 0, 0, 0, m, n, p, m, n, p);
+        }
+        cerr << c[1] << '\n';
+
+        delete[] a;
+        delete[] b;
+        delete[] c;
+    }
+
+    for (int i = 0; i <= counter; i++) {
+        cout << (i+5) << '\t' << timeDouble[i] << '\n';
+    }
+}
+
 
 
 
@@ -1363,7 +1465,7 @@ int main(int argc, char* argv[]) {
     int size,test,range,offset,increment,runs,s;
     if(argc != 6) {
         cout << "Arguments are <test> <pow> <range> <runs> <s>\n";
-        test = 4;
+        test = 6;
         size = 7;
         offset = 10000;
         increment = 1000;
@@ -1397,6 +1499,9 @@ int main(int argc, char* argv[]) {
     }
     else if(test == 5) {
         testStrassenRecursiveAndStrassenBottom(size,runs,range);
+    }
+    else if(test == 6) {
+        testDoubleRecursive(size,runs,range);
     }
 
     /* 3x3 Correct result will be
@@ -1441,11 +1546,23 @@ int main(int argc, char* argv[]) {
     int* test2 = new int[16]{1,2,5,6,3,4,7,8,9,10,13,14,11,12,15,16};
     int* test3 = new int[16]{0,0,0,0,0,0,0,0,0,0,0,0,0,0,0,0};
 
-    multiplyRecursiveLayoutSquare(test1,test2,test3,4);
+    //multiplyRecursiveLayoutSquare(test1,test2,test3,4);
+    multiplyDoubleRecursive(test1, test2, test3, 0, 0, 0, 4, 4, 4, 4, 4, 4);
 
     for(int i = 0; i < 9; i++) {
         cout << test3[i] << '\n';
     }*/
+
+    // Results from above
+    /*90
+    100
+    202
+    228
+    110
+    120
+    254
+    280
+    314*/
 
     // Test tiledMultSquare
     /*int* test1 = new int[9]{1,2,3,4,5,6,7,8,9};
