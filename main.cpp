@@ -1276,6 +1276,7 @@ void testStrassenRecursiveAndStrassenBottom(int s, int runs, int range) {
     int *timeRecursiveLayout = new int[s - 4];
     int *timeStrassen = new int[s - 1];
     int *timeStrassenBottom = new int[s - 4];
+    int* timeDoubleRecursive = new int[s-4];
     int counter = -1;
 
     for (int x = 5; x <= s; x++) {
@@ -1390,6 +1391,30 @@ void testStrassenRecursiveAndStrassenBottom(int s, int runs, int range) {
 
         cerr << c[1] << '\n';
 
+        start = Clock::now();
+
+        for (int j = 0; j < runs; j++) {
+            for (int i = 0; i < m * p; i++) {
+                c[i] = 0;
+            }
+            multiplyDoubleRecursive(a, b, c, 0, 0, 0, m, n, p, m, n, p);
+        }
+
+        stop = Clock::now();
+        total = stop - start;
+        millis = std::chrono::duration_cast<std::chrono::milliseconds>(total).count();
+        timeDoubleRecursive[counter] = millis;
+        cerr << c[1] << '\n';
+
+        for (int j = 0; j < runs; j++) {
+            for (int i = 0; i < m * p; i++) {
+                c[i] = 0;
+            }
+            multiplyDoubleRecursive(a, b, c, 0, 0, 0, m, n, p, m, n, p);
+        }
+
+        cerr << c[1] << '\n';
+
 
         delete[] a;
         delete[] b;
@@ -1398,7 +1423,7 @@ void testStrassenRecursiveAndStrassenBottom(int s, int runs, int range) {
 
     for (int i = 0; i <= counter; i++) {
         cout << (i+5) << '\t' << timeNormal[i] << '\t' << timeRecursiveLayout[i] << '\t' << timeStrassen[i] <<
-             '\t' << timeStrassenBottom[i] << '\n';
+             '\t' << timeStrassenBottom[i] << '\t' << timeDoubleRecursive[i] << '\n';
     }
 
 }
